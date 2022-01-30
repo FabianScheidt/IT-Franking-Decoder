@@ -1,0 +1,47 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: no-commit-to-branch
+        args:
+          - --branch
+          - master
+          - --branch
+          - next
+      - id: detect-private-key
+        stages:
+          - commit
+          - manual
+      - id: check-yaml
+        stages:
+          - commit
+          - manual
+      - id: check-added-large-files
+        args:
+          - "--maxkb=10000"
+        stages:
+          - commit
+          - manual
+      - id: check-case-conflict
+        stages:
+          - commit
+          - manual
+      - id: check-symlinks
+        stages:
+          - commit
+          - manual
+      - id: check-merge-conflict
+        stages:
+          - commit
+          - merge-commit
+          - manual
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.1.2
+    hooks:
+      - id: prettier
+        additional_dependencies:
+          - prettier@2.1.2
+        stages:
+          - commit
+          - manual
