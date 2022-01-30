@@ -4,6 +4,131 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Deutsche Post IT Franking Decoder</title>
+    <script type="text/javascript" src="franking-decoder.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #ccc;
+        padding: 40px;
+      }
+
+      #wrapper {
+        margin: auto;
+        max-width: 800px;
+        padding: 40px;
+        background: #fff;
+      }
+
+      .flex-wrapper {
+        display: flex;
+      }
+
+      .flex-wrapper > * {
+        flex: 1;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      th {
+        font-size: 75%;
+        text-align: left;
+        max-width: 200px;
+        vertical-align: bottom;
+      }
+
+      th,
+      td {
+        padding: 5px;
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <div id="wrapper">
+      <h1>Deutsche Post IT Franking Decoder</h1>
+      <p>
+        Scan the Data Matrix code using your favorite scanner and paste it into
+        the input field to decode its contents.
+      </p>
+      <div class="flex-wrapper">
+        <div>
+          <h2>Input</h2>
+          <textarea id="inputString" cols="30" rows="10"></textarea>
+        </div>
+        <div>
+          <h2>Output</h2>
+          <table>
+            <tr>
+              <th>Postal Company</th>
+              <td id="postalCompany"></td>
+            </tr>
+            <tr>
+              <th>Franking type and version</th>
+              <td id="frankingTypeAndVersion"></td>
+            </tr>
+            <tr>
+              <th>Version of products/prices</th>
+              <td id="versionOfProductsAndPrices"></td>
+            </tr>
+            <tr>
+              <th>Customer number</th>
+              <td id="customerNumber"></td>
+            </tr>
+            <tr>
+              <th>Charge or franking value</th>
+              <td id="chargeOrFrankingValueStr"></td>
+            </tr>
+            <tr>
+              <th>Date of posting or date of electronic processing</th>
+              <td id="dateOfPostingOrElectronicProcessingStr"></td>
+            </tr>
+            <tr>
+              <th>Product key</th>
+              <td id="productKey"></td>
+            </tr>
+            <tr>
+              <th>Unique consecutive item number</th>
+              <td id="uniqueConsecutiveItemNumber"></td>
+            </tr>
+            <tr>
+              <th>Subscription number</th>
+              <td id="subscriptionNumber"></td>
+            </tr>
+            <tr>
+              <th>Posting certificate number</th>
+              <td id="postingCertificateNumber"></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const input = document.getElementById("inputString");
+
+      input.addEventListener("keyup", () => {
+        const decoder = new FrankingDecoder(input.value);
+        const res = decoder.decode();
+
+        const currencyFormat = new Intl.NumberFormat("de-DE", {
+          style: "currency",
+          currency: "EUR",
+        });
+        res.chargeOrFrankingValueStr = currencyFormat.format(
+          res.chargeOrFrankingValue
+        );
+        res.dateOfPostingOrElectronicProcessingStr = res.dateOfPostingOrElectronicProcessing.toLocaleDateString(
+          "de-DE"
+        );
+
+        for (const key of Object.keys(res)) {
+          const el = document.getElementById(key);
+          if (el) {
+            el.innerText = res[key];
+          }
+        }
+      });
+    </script>
+  </body>
 </html>
