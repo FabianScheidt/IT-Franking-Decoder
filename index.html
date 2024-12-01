@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Deutsche Post IT Franking Decoder</title>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/@zxing/library@latest"
+    ></script>
     <script type="text/javascript" src="franking-decoder.js"></script>
     <style>
       body {
@@ -54,7 +58,25 @@
       <div class="flex-wrapper">
         <div>
           <h2>Input</h2>
-          <textarea id="inputString" cols="30" rows="10"></textarea>
+          <div id="textInputWrapper">
+            <div>
+              <textarea id="textInput" cols="30" rows="10"></textarea>
+            </div>
+            <div>
+              <button id="switchToVideoButton">Switch to Scanner</button>
+            </div>
+          </div>
+          <div id="videoInputWrapper">
+            <div>
+              <video id="videoInput" width="300" height="200"></video>
+            </div>
+            <div>
+              <select id="videoSourceSelect"></select>
+            </div>
+            <div>
+              <button id="switchToTextButton">Switch to Text</button>
+            </div>
+          </div>
         </div>
         <div>
           <h2>Output</h2>
@@ -105,10 +127,33 @@
     </div>
 
     <script type="text/javascript">
-      const input = document.getElementById("inputString");
+      // Find DOM elements
+      const textInputWrapper = document.getElementById("textInputWrapper");
+      const videoInputWrapper = document.getElementById("videoInputWrapper");
+      const switchToVideoBtn = document.getElementById("switchToVideoButton");
+      const switchToTextBtn = document.getElementById("switchToTextButton");
+      const textInput = document.getElementById("textInput");
+      const videoInput = document.getElementById("videoInput");
+      const videoSourceSelect = document.getElementById("videoSourceSelect");
 
-      input.addEventListener("keyup", () => {
-        const decoder = new FrankingDecoder(input.value);
+      // Declare state
+      let codeReader, selectedDeviceId;
+
+      // Register Handlers
+      function switchToVideo() {
+        textInputWrapper.style.display = "none";
+        videoInputWrapper.style.display = "block";
+        decodeVideoInputOnce();
+      }
+
+      function switchToText() {
+        textInputWrapper.style.display = "block";
+        videoInputWrapper.style.display = "none";
+        codeReader.reset();
+      }
+
+      function decodeTextInput() {
+        const decoder = new FrankingDecoder(textInput.value);
         const res = decoder.decode();
 
         const currencyFormat = new Intl.NumberFormat("de-DE", {
@@ -128,7 +173,40 @@
             el.innerText = res[key];
           }
         }
-      });
+      }
+
+      async function initializeVideoInput() {
+        if (codeReader) {
+          return;
+        }
+        codeReader = new ZXing.BrowserDatamatrixCodeReader();
+        const videoInputDevices = await codeReader.getVideoInputDevices();
+        selectedDeviceId = videoInputDevices[0].deviceId;
+        videoInputDevices.forEach((element) => {
+          const sourceOption = document.createElement("option");
+          sourceOption.text = element.label;
+          sourceOption.value = element.deviceId;
+          videoSourceSelect.appendChild(sourceOption);
+        });
+        videoSourceSelect.onchange = () =>
+          (selectedDeviceId = videoSourceSelect.value);
+      }
+
+      async function decodeVideoInputOnce() {
+        await initializeVideoInput();
+        textInput.value = await codeReader.decodeFromInputVideoDevice(
+          selectedDeviceId,
+          videoInput
+        );
+        switchToText();
+        decodeTextInput();
+      }
+
+      // Wire everything up
+      videoInputWrapper.style.display = "none";
+      switchToVideoBtn.addEventListener("click", () => switchToVideo());
+      switchToTextBtn.addEventListener("click", () => switchToText());
+      textInput.addEventListener("keyup", () => decodeTextInput());
     </script>
   </body>
 </html>
