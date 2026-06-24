@@ -61,8 +61,8 @@ class FrankingDecoder {
     9287: "Pressesendung E+2 PremA",
   };
 
-  constructor(str) {
-    this.str = str;
+  constructor(bytes) {
+    this.bytes = bytes;
   }
 
   decode() {
@@ -84,7 +84,7 @@ class FrankingDecoder {
   }
 
   decodeStr(indexStart, indexEnd) {
-    return this.str.substring(indexStart, indexEnd);
+    return String.fromCharCode(this.bytes.slice(indexStart, indexEnd));
   }
 
   decodeInt(indexStart, indexEnd) {
@@ -92,7 +92,7 @@ class FrankingDecoder {
 
     let res = 0;
     for (let i = indexStart; i < indexEnd; i++) {
-      res = res * 256 + this.str.charCodeAt(i);
+      res = res * 256 + this.bytes[i];
     }
     return res;
   }

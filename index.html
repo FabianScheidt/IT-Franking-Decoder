@@ -181,7 +181,7 @@
           .map((b) => b.toString(16).padStart(2, "0"))
           .join(" ");
 
-        const decoder = new FrankingDecoder(textInput.value);
+        const decoder = new FrankingDecoder(bytes);
         const res = decoder.decode();
 
         const currencyFormat = new Intl.NumberFormat("de-DE", {
