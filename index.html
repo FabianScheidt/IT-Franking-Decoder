@@ -79,7 +79,10 @@
           <h2>Input</h2>
           <div id="textInputWrapper">
             <div>
-              <textarea id="textInput" cols="30" rows="10"></textarea>
+              <textarea id="textInput" cols="30" rows="5"></textarea>
+            </div>
+            <div>
+              <textarea id="hexOutput" cols="30" rows="5" disabled></textarea>
             </div>
             <div>
               <button id="switchToVideoButton">Switch to Scanner</button>
@@ -152,6 +155,7 @@
       const switchToVideoBtn = document.getElementById("switchToVideoButton");
       const switchToTextBtn = document.getElementById("switchToTextButton");
       const textInput = document.getElementById("textInput");
+      const hexOutput = document.getElementById("hexOutput");
       const videoInput = document.getElementById("videoInput");
       const videoSourceSelect = document.getElementById("videoSourceSelect");
 
@@ -172,6 +176,11 @@
       }
 
       function decodeTextInput() {
+        const bytes = Uint8Array.from(textInput.value, (c) => c.charCodeAt(0));
+        hexOutput.innerText = Array.from(bytes)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(" ");
+
         const decoder = new FrankingDecoder(textInput.value);
         const res = decoder.decode();
 
@@ -213,10 +222,12 @@
 
       async function decodeVideoInputOnce() {
         await initializeVideoInput();
-        textInput.value = await codeReader.decodeFromInputVideoDevice(
-          selectedDeviceId,
-          videoInput
-        );
+        textInput.value = (
+          await codeReader.decodeFromInputVideoDevice(
+            selectedDeviceId,
+            videoInput
+          )
+        ).getText();
         switchToText();
         decodeTextInput();
       }
